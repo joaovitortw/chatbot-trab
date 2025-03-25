@@ -1,0 +1,49 @@
+Car Information Chatbot
+Este é um chatbot em Python que responde a perguntas sobre carros, utilizando a SerpAPI para buscar informações na web e a API do OpenAI para gerar respostas.
+
+Pré-requisitos
+Python 3.x
+Chave de API do OpenAI
+Chave de API da SerpAPI
+
+Instalação
+Clone ou baixe o repositório.
+
+Instale as dependências:
+
+bash
+Copiar
+Editar
+pip install openai requests
+Como Usar
+Substitua as chaves de API do OpenAI e SerpAPI no código.
+
+Execute o script:
+
+bash
+Copiar
+Editar
+python chatbot.py
+Digite sua pergunta sobre carros quando solicitado.
+
+O chatbot retornará uma resposta com base nos resultados encontrados.
+
+Exemplo
+Entrada:
+
+yaml
+Copiar
+Editar
+Pergunte sobre carros: Motor do Jetta Highline 2017?
+Saída:
+
+yaml
+Copiar
+Editar
+Resultados relevantes:
+1. Título: 2017 Volkswagen Jetta 4dr 1.8 TSI Auto Highline
+   Descrição: Powertrain · 1,8 l I-4 · 170 hp...
+
+Resposta: O motor do Jetta Highline 2017 é um 1.8L Turbo com 170 hp a 6200 rpm.
+Licença
+MIT License.
