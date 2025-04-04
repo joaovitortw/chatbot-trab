@@ -5,7 +5,6 @@ import os
 # Configurar a chave da API Gemini
 genai.configure(api_key="AIzaSyD8NuvzLTRcmdSSsNsgZ8G7OqDhKtM9POs") 
 
-
 def search_car_info(query):
     serp_api_key = '2a5d0a505457f4743be1f1e7994b5384ff5def525b5e0191a99bac4e1dd26cd5'
     search_url = f'https://serpapi.com/search?q={query}+car&api_key={serp_api_key}'
@@ -15,7 +14,7 @@ def search_car_info(query):
         data = response.json()
         print("Resultados relevantes da API SerpAPI:")
         if 'organic_results' in data:
-            for i, result in enumerate(data['organic_results'][:3]):
+            for i, result in enumerate(data['organic_results'][:7]):
                 print(f"\nResultado {i+1}:")
                 print(f"**Título**: {result['title']}")
                 print(f"**Descrição**: {result['snippet']}")
@@ -31,7 +30,7 @@ def generate_response(query, search_results):
     if 'organic_results' in search_results:
         search_summary = "\n".join([
             f"{result['title']}: {result['snippet']}" 
-            for result in search_results['organic_results'][:3]
+            for result in search_results['organic_results'][:7]
         ])
     else:
         return "Nenhum resultado encontrado para essa consulta."
