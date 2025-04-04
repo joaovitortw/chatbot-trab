@@ -1,6 +1,8 @@
-Este projeto é um chatbot que responde perguntas sobre carros. Ele utiliza a API Gemini, do Google, para gerar respostas com inteligência artificial e a SerpAPI para buscar informações na web. A interface é feita com Streamlit, permitindo que qualquer pessoa utilize a aplicação diretamente no navegador.
+Este projeto é um chatbot que responde perguntas sobre carros. Ele utiliza a API Gemini, do Google, para gerar respostas com inteligência artificial e a SerpAPI para buscar informações na web. 
+A interface é feita com Streamlit, permitindo que qualquer pessoa utilize a aplicação diretamente no navegador.
 
-Para usar a aplicação, primeiro é necessário ter o Python instalado em sua máquina, preferencialmente na versão 3.10 ou superior. Também é necessário ter uma chave da Gemini API, que você pode obter acessando o site do Google AI Studio (https://makersuite.google.com/app), e uma chave da SerpAPI, que pode ser obtida no site https://serpapi.com/.
+Para usar a aplicação, primeiro é necessário ter o Python instalado em sua máquina, preferencialmente na versão 3.10 ou superior. 
+Também é necessário ter uma chave da Gemini API, que você pode obter acessando o site do Google AI Studio (https://makersuite.google.com/app), e uma chave da SerpAPI, que pode ser obtida no site https://serpapi.com/.
 
 Com as chaves em mãos, siga os passos abaixo:
 
