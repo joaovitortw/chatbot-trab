@@ -1,61 +1,25 @@
-Car Information Chatbot
-Este projeto é um chatbot simples em Python que responde a perguntas sobre carros. Ele usa a SerpAPI para buscar informações sobre carros na web e a API do OpenAI para gerar respostas claras e concisas para o usuário.
+Este projeto é um chatbot que responde perguntas sobre carros. Ele utiliza a API Gemini, do Google, para gerar respostas com inteligência artificial e a SerpAPI para buscar informações na web. A interface é feita com Streamlit, permitindo que qualquer pessoa utilize a aplicação diretamente no navegador.
 
-Funcionalidade
-O chatbot faz uma consulta à SerpAPI para buscar informações relevantes sobre carros.
+Para usar a aplicação, primeiro é necessário ter o Python instalado em sua máquina, preferencialmente na versão 3.10 ou superior. Também é necessário ter uma chave da Gemini API, que você pode obter acessando o site do Google AI Studio (https://makersuite.google.com/app), e uma chave da SerpAPI, que pode ser obtida no site https://serpapi.com/.
 
-Ele usa a API do OpenAI para gerar uma resposta mais elaborada e personalizada, com base nas informações extraídas.
+Com as chaves em mãos, siga os passos abaixo:
 
-O chatbot permite ao usuário fazer perguntas como "Qual o motor do Jetta Highline 2017?" e obter uma resposta concisa.
+Crie uma pasta para o projeto e coloque dentro os arquivos app.py (interface Streamlit) e chatbot.py (lógica do chatbot).
 
-Pré-requisitos
-Para rodar este projeto, você precisará:
+No terminal, entre na pasta do projeto.
 
-Python 3.x instalado
-Uma chave de API do OpenAI (Modelo: text-davinci-003 ou compatível)
-Uma chave de API do SerpAPI
+Instale as bibliotecas necessárias com o comando: pip install streamlit google-generativeai requests
 
-2.Instale as dependências do projeto:
-pip install openai requests
+Abra o arquivo chatbot.py e substitua a linha onde aparece genai.configure(api_key="...") pela sua chave da Gemini(LINHA 6).
 
-3.Adicione suas chaves de API ao código. No arquivo chatbot.py, substitua:
+Ainda no chatbot.py, substitua o valor da variável serp_api_key pela sua chave da SerpAPI(LINHA 10).
 
-A chave da SerpAPI na linha 7.
-A chave da OpenAI API na linha 4 (recomenda-se armazenar a chave como uma variável de ambiente ou usar um arquivo .env para maior segurança).
+Salve tudo.
 
-4.Como Usar
+Depois disso, você pode rodar a aplicação com o comando streamlit run app.py. O navegador será aberto automaticamente com a interface. Basta digitar sua pergunta sobre carros e o chatbot buscará as informações na web e responderá com base nos resultados.
 
-Execute o script:
-python chatbot.py
+Se quiser testar apenas o back-end diretamente no terminal, execute o arquivo chatbot.py com python chatbot.py, digite sua pergunta e veja a resposta na tela.
 
-Quando solicitado, digite sua pergunta sobre carros.
-O chatbot buscará informações relevantes na web usando a SerpAPI e responderá com base nos resultados, utilizando a OpenAI API para uma resposta mais completa.
+Agora, para testar a aplicação completa, você pode acessar o arquivo pelo terminal do Visual Studio Code e executar esse comando: streamlit run app.py. para que consiga rodar o back-end em conjunto com o front-end;
 
-Exemplo:
-
-Pergunte sobre carros: Motor do Jetta Highline 2017?
-
-Resultados relevantes da API SerpAPI:
-1. Título: 2017 Volkswagen Jetta 4dr 1.8 TSI Auto Highline
-   Descrição: Powertrain · 1,8 l I-4 · 170 hp a 4,800 rpm...
-
-Resposta do assistente:
-O motor do Jetta Highline 2017 é um 1.8L Turbo com 170 hp a 6200 rpm.
-
-Arquitetura
-SerpAPI: Utilizada para realizar pesquisas na web e obter resultados sobre carros.
-OpenAI API: Usada para gerar respostas baseadas nos resultados encontrados.
-Python: Linguagem utilizada para implementar o chatbot.
-
-Contribuição
-Faça um fork deste repositório.
-Crie uma branch para sua feature (git checkout -b feature/nome-da-feature).
-Commit suas mudanças (git commit -am 'Adiciona nova feature').
-Envie para o repositório remoto (git push origin feature/nome-da-feature).
-
-Abra um pull request.
-
-Licença
-Distribuído sob a licença MIT. Veja o arquivo LICENSE para mais informações.
-
-
+Obrigado!
