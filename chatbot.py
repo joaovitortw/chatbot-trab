@@ -4,7 +4,6 @@ import google.generativeai as genai
 import psycopg2
 from psycopg2.extras import RealDictCursor
 from datetime import datetime
-# Observação: variáveis de ambiente devem estar definidas, sem dependência de dotenv
 import os
 import requests
 import google.generativeai as genai
@@ -34,7 +33,7 @@ conn = psycopg2.connect(
     port=os.getenv("PGPORT", "5432"),
     dbname=os.getenv("PGDATABASE", "chatbotdb"),
     user=os.getenv("PGUSER", "postgres"),
-    password=os.getenv("PGPASSWORD", "J0a0witek@"),
+    password=os.getenv("PGPASSWORD", "SUASENHAQUI!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"),
     connect_timeout=10
 )
 cursor = conn.cursor(cursor_factory=RealDictCursor)
