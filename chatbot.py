@@ -4,14 +4,8 @@ import google.generativeai as genai
 import psycopg2
 from psycopg2.extras import RealDictCursor
 from datetime import datetime
-import os
-import requests
-import google.generativeai as genai
-import psycopg2
-from psycopg2.extras import RealDictCursor
-from datetime import datetime
 
-# Configuração das APIs usando variáveis de ambiente com fallback com fallback
+# Configuração das APIs usando variáveis de ambiente com fallback
 gemini_api_key = os.getenv(
     "GEMINI_API_KEY",
     "AIzaSyD8NuvzLTRcmdSSsNsgZ8G7OqDhKtM9POs"
@@ -33,7 +27,7 @@ conn = psycopg2.connect(
     port=os.getenv("PGPORT", "5432"),
     dbname=os.getenv("PGDATABASE", "chatbotdb"),
     user=os.getenv("PGUSER", "postgres"),
-    password=os.getenv("PGPASSWORD", "SUASENHAQUI!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"),
+    password=os.getenv("PGPASSWORD", "123456"),
     connect_timeout=10
 )
 cursor = conn.cursor(cursor_factory=RealDictCursor)
@@ -57,17 +51,17 @@ def fetch_logs(limit: int = 20):
     cur.execute(
         """
         SELECT pergunta, resposta, ts
-          FROM logs
-      ORDER BY ts DESC
-         LIMIT %s
+        FROM logs
+        ORDER BY ts DESC
+        LIMIT %s
         """,
         (limit,)
     )
     return cur.fetchall()
 
-# Função de pesquisa via SerpAPI com tratamento de erros
+# Pesquisa na SerpAPI com imagens (tbm=isch)
 def search_car_info(query: str) -> dict:
-    url = f'https://serpapi.com/search?q={query}+car&api_key={SERP_API_KEY}'
+    url = f'https://serpapi.com/search.json?q={query}+car&tbm=isch&api_key={SERP_API_KEY}'
     try:
         resp = requests.get(url, timeout=10)
         resp.raise_for_status()
@@ -76,34 +70,32 @@ def search_car_info(query: str) -> dict:
         print(f"Erro ao consultar SerpAPI: {e}")
         return {}
 
-# Geração de resposta com Gemini e tratamento de exceções
+# Geração de resposta com imagem incluída
 def generate_response(query: str, search_results: dict) -> str:
-    # Extrai até 7 resultados
-    results = search_results.get('organic_results', [])[:7]
-    if not results:
-        return "Nenhum resultado encontrado para essa consulta."
-
-    # Monta o sumário dos resultados
-    summary = "\n".join(
-        f"• {r['title']}: {r['snippet']}" for r in results
-    )
+    image_url = ""
+    images = search_results.get("images_results", [])
+    if images:
+        image_url = images[0].get("original") or images[0].get("thumbnail")
 
     prompt = f"""
 O usuário perguntou sobre carros: {query}
-Aqui estão alguns resultados encontrados:
-{summary}
-
-Baseado nessas informações, forneça uma resposta clara e concisa para o usuário:
+Gere uma resposta clara e objetiva sobre esse tema, com base no conhecimento atual do modelo.
 """
+
     try:
         model = genai.GenerativeModel("gemini-2.0-flash")
         out = model.generate_content(prompt)
-        return out.text.strip()
+        resposta_texto = out.text.strip()
+
+        if image_url:
+            resposta_texto += f"\n\n🔗 Veja uma imagem relacionada: {image_url}"
+        return resposta_texto
+
     except Exception as e:
         print(f"Erro na geração de conteúdo: {e}")
         return "Desculpe, ocorreu um erro ao gerar a resposta."
 
-# Função principal do chatbot que grava logs no banco
+# Função principal do chatbot
 def chatbot(query: str) -> str:
     dados = search_car_info(query)
     resposta = generate_response(query, dados) if dados else "Desculpe, não encontrei informações relevantes."
@@ -119,7 +111,7 @@ def chatbot(query: str) -> str:
 
     return resposta
 
-# Execução standalone para testes
+# Execução standalone
 if __name__ == "__main__":
     q = input("Pergunte sobre carros: ")
-    print(chatbot(q))
+    print("\n" + chatbot(q))
