@@ -27,36 +27,41 @@ conn = psycopg2.connect(
     port=os.getenv("PGPORT", "5432"),
     dbname=os.getenv("PGDATABASE", "chatbotdb"),
     user=os.getenv("PGUSER", "postgres"),
-    password=os.getenv("PGPASSWORD", "123456"),
+    password=os.getenv("PGPASSWORD", "J0a0witek@"),
     connect_timeout=10
 )
 cursor = conn.cursor(cursor_factory=RealDictCursor)
 
-# Criação da tabela de logs, se não existir
-cursor.execute(
-    """
+# Criação da tabela logs se não existir
+cursor.execute("""
     CREATE TABLE IF NOT EXISTS logs (
         id SERIAL PRIMARY KEY,
         pergunta TEXT NOT NULL,
         resposta TEXT NOT NULL,
         ts TIMESTAMP NOT NULL
     )
-    """
-)
+""")
+conn.commit()
+
+# Criação da tabela users se não existir
+cursor.execute("""
+    CREATE TABLE IF NOT EXISTS users (
+        id SERIAL PRIMARY KEY,
+        username VARCHAR(50) UNIQUE NOT NULL,
+        password VARCHAR(255) NOT NULL
+    )
+""")
 conn.commit()
 
 # Função para buscar histórico de conversas
 def fetch_logs(limit: int = 20):
     cur = conn.cursor(cursor_factory=RealDictCursor)
-    cur.execute(
-        """
+    cur.execute("""
         SELECT pergunta, resposta, ts
         FROM logs
         ORDER BY ts DESC
         LIMIT %s
-        """,
-        (limit,)
-    )
+    """, (limit,))
     return cur.fetchall()
 
 # Pesquisa na SerpAPI com imagens (tbm=isch)
@@ -111,7 +116,40 @@ def chatbot(query: str) -> str:
 
     return resposta
 
-# Execução standalone
+# Função para login via banco
+def login_execute(username: str, password: str) -> bool:
+    """
+    Valida usuário e senha no banco.
+    ATENÇÃO: senha armazenada em texto puro (não recomendado para produção).
+    """
+    try:
+        cursor.execute(
+            "SELECT password FROM users WHERE username = %s",
+            (username.strip(),)
+        )
+        row = cursor.fetchone()
+        if row is None:
+            return False
+        stored_password = row["password"]
+        return stored_password == password.strip()
+    except Exception as e:
+        print(f"Erro no login: {e}")
+        return False
+
+# Execução standalone para teste do chatbot e login
 if __name__ == "__main__":
-    q = input("Pergunte sobre carros: ")
-    print("\n" + chatbot(q))
+    print("=== Login no FUELTECO dos Carros ===")
+    usuario = input("Usuário: ")
+    senha = input("Senha: ")
+
+    if login_execute(usuario, senha):
+        print(f"Login válido! Bem-vindo, {usuario}.")
+        while True:
+            pergunta = input("Pergunte sobre carros (ou 'sair' para encerrar): ")
+            if pergunta.lower() in ["sair", "exit", "quit"]:
+                print("Obrigado por usar o FUELTECO. Até logo!")
+                break
+            resposta = chatbot(pergunta)
+            print("\nResposta do assistente:\n", resposta, "\n")
+    else:
+        print("Usuário ou senha incorretos.")
