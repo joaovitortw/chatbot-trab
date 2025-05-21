@@ -1,3 +1,5 @@
+# app.py (front-end)
+
 import streamlit as st
 import pandas as pd
 from backend import chatbot, fetch_logs, login_execute
@@ -33,11 +35,16 @@ if not st.session_state["logado"]:
     st.title("🔐 Login para acessar o FUELTECO dos Carros")
     usuario_input = st.text_input("Usuário", key="input_usuario")
     senha_input = st.text_input("Senha", type="password", key="input_senha")
+    
     if st.button("Entrar"):
         if login_execute(usuario_input, senha_input):
             st.session_state["logado"] = True
             st.session_state["usuario"] = usuario_input
-            st.experimental_rerun()
+            # API atualizada do Streamlit:
+            try:
+                st.rerun()
+            except AttributeError:
+                st.experimental_rerun()
         else:
             st.error("Usuário ou senha incorretos. Tente novamente.")
 else:
@@ -84,13 +91,11 @@ else:
         else:
             st.info("Ainda não há registros de conversas.")
 
+    # Botão sair
     if st.button("Sair"):
         st.session_state["logado"] = False
         st.session_state["usuario"] = ""
-    try:
-        st.experimental_rerun()
-    except st.script_runner.RerunException:
-        pass
-    except Exception as e:
-        st.error(f"Erro inesperado ao reiniciar: {e}")
-
+        try:
+            st.rerun()
+        except AttributeError:
+            st.experimental_rerun()

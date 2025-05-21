@@ -1,3 +1,5 @@
+# backend.py (back-end)
+
 import os
 import requests
 import google.generativeai as genai
@@ -48,7 +50,7 @@ cursor.execute("""
     CREATE TABLE IF NOT EXISTS users (
         id SERIAL PRIMARY KEY,
         username VARCHAR(50) UNIQUE NOT NULL,
-        password VARCHAR(255) NOT NULL
+        password TEXT NOT NULL
     )
 """)
 conn.commit()
@@ -116,11 +118,10 @@ def chatbot(query: str) -> str:
 
     return resposta
 
-# Função para login via banco
+# Função para login via banco (sem hash)
 def login_execute(username: str, password: str) -> bool:
     """
-    Valida usuário e senha no banco.
-    ATENÇÃO: senha armazenada em texto puro (não recomendado para produção).
+    Valida usuário e senha no banco. A senha é comparada em texto puro.
     """
     try:
         cursor.execute(
@@ -131,25 +132,19 @@ def login_execute(username: str, password: str) -> bool:
         if row is None:
             return False
         stored_password = row["password"]
-        return stored_password == password.strip()
+        return stored_password == password.strip()  # Comparação direta sem hash
     except Exception as e:
         print(f"Erro no login: {e}")
         return False
 
-# Execução standalone para teste do chatbot e login
-if __name__ == "__main__":
-    print("=== Login no FUELTECO dos Carros ===")
-    usuario = input("Usuário: ")
-    senha = input("Senha: ")
-
-    if login_execute(usuario, senha):
-        print(f"Login válido! Bem-vindo, {usuario}.")
-        while True:
-            pergunta = input("Pergunte sobre carros (ou 'sair' para encerrar): ")
-            if pergunta.lower() in ["sair", "exit", "quit"]:
-                print("Obrigado por usar o FUELTECO. Até logo!")
-                break
-            resposta = chatbot(pergunta)
-            print("\nResposta do assistente:\n", resposta, "\n")
-    else:
-        print("Usuário ou senha incorretos.")
+# Função para criar novo usuário (sem hash de senha)
+def criar_usuario(username: str, password: str):
+    try:
+        cursor.execute(
+            "INSERT INTO users (username, password) VALUES (%s, %s)",
+            (username.strip(), password.strip())
+        )
+        conn.commit()
+        print("Usuário criado com sucesso.")
+    except Exception as e:
+        print(f"Erro ao criar usuário: {e}")
