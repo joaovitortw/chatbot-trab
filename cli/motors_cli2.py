@@ -4,7 +4,6 @@ from rich import print
 from services.backend import get_calendar, get_result_by_round, get_standings
 from core.history import History
 
-# salvar favoritos opcional
 def try_save_fav(enabled: bool, serie: str, item_id: str, meta: dict):
     if not enabled:
         return
@@ -18,7 +17,7 @@ def try_save_fav(enabled: bool, serie: str, item_id: str, meta: dict):
     except Exception as e:
         print(f"[yellow]Não foi possível salvar favorito:[/yellow] {e}")
 
-@click.group(context_settings=dict(help_option_names=["-h", "--help"]))
+@click.group(context_settings=dict(help_option_names=["-h", "--help"])) 
 @click.option("--debug", is_flag=True, help="Mostra trace completo de erros.")
 @click.pass_context
 def motors2(ctx, debug):
@@ -28,7 +27,7 @@ def motors2(ctx, debug):
     ctx.obj["DEBUG"] = bool(debug)
 
 def handle_errors(f):
-    import functools, click as _click, traceback, sys
+    import functools, click as _click, traceback
     @functools.wraps(f)
     @click.pass_context
     def wrapper(ctx, *args, **kwargs):
@@ -46,9 +45,9 @@ def handle_errors(f):
     return wrapper
 
 @motors2.command()
-@click.option("--serie", type=click.Choice(["f1"], case_sensitive=False), required=True, help="Série esportiva (ex.: f1).")
-@click.option("--ano", type=int, required=False, help="Ano do calendário (ex.: 2025).")
-@click.option("--save", is_flag=True, help="Tenta salvar como favorito (se logado).")
+@click.option("--serie", type=click.Choice(["f1"], case_sensitive=False), required=True, help="Série esportiva (ex.: f1)." )
+@click.option("--ano", type=int, required=False, help="Ano do calendário (ex.: 2025)." )
+@click.option("--save", is_flag=True, help="Tenta salvar como favorito (se logado)." )
 @handle_errors
 def calendario(serie, ano, save):
     data = get_calendar(serie=serie.lower(), year=ano)
@@ -59,9 +58,9 @@ def calendario(serie, ano, save):
 
 @motors2.command()
 @click.option("--serie", type=click.Choice(["f1"], case_sensitive=False), required=True)
-@click.option("--round", "rnd", type=int, required=True, help="Número da etapa (round).")
-@click.option("--ano", type=int, required=False, help="Ano, se quiser fixar.")
-@click.option("--save", is_flag=True, help="Tenta salvar como favorito (se logado).")
+@click.option("--round", "rnd", type=int, required=True, help="Número da etapa (round)." )
+@click.option("--ano", type=int, required=False, help="Ano, se quiser fixar." )
+@click.option("--save", is_flag=True, help="Tenta salvar como favorito (se logado)." )
 @handle_errors
 def resultado(serie, rnd, ano, save):
     res = get_result_by_round(serie=serie.lower(), rnd=rnd, year=ano)
@@ -77,9 +76,9 @@ def resultado(serie, rnd, ano, save):
 
 @motors2.command()
 @click.option("--serie", type=click.Choice(["f1"], case_sensitive=False), required=True)
-@click.option("--tipo", type=click.Choice(["pilotos","equipes"], case_sensitive=False), required=True, help="pilotos|equipes")
+@click.option("--tipo", type=click.Choice(["pilotos","equipes"], case_sensitive=False), required=True, help="pilotos|equipes" )
 @click.option("--ano", type=int, required=False)
-@click.option("--save", is_flag=True, help="Tenta salvar como favorito (se logado).")
+@click.option("--save", is_flag=True, help="Tenta salvar como favorito (se logado)." )
 @handle_errors
 def classificacao(serie, tipo, ano, save):
     tbl = get_standings(serie=serie.lower(), tipo=tipo.lower(), year=ano)

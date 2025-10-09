@@ -10,7 +10,7 @@ from .validators import validate_email, is_valid_cpf, only_digits, format_cpf_ma
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./data.db")
 SESSION_FILE = os.getenv("SESSION_FILE", ".session.json")
 
-engine = create_engine(DATABASE_URL, echo=False, future=True)
+engine = create_engine(DATABASE_URL, echo=False, future=True, pool_pre_ping=True)
 SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False, future=True)
 Base = declarative_base()
 
