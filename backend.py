@@ -148,3 +148,22 @@ def criar_usuario(username: str, password: str):
         print("Usuário criado com sucesso.")
     except Exception as e:
         print(f"Erro ao criar usuário: {e}")
+
+# Consulta a próxima corrida real via Ergast API
+def get_next_event_f1() -> dict:
+    try:
+        url = "https://ergast.com/api/f1/current/next.json"
+        response = requests.get(url, timeout=10)
+        response.raise_for_status()
+        data = response.json()
+        race = data["MRData"]["RaceTable"]["Races"][0]
+        return {
+            "nome": race["raceName"],
+            "data": race["date"],
+            "hora": race.get("time", "Horário não informado"),
+            "circuito": race["Circuit"]["circuitName"],
+            "pais": race["Circuit"]["Location"]["country"]
+        }
+    except Exception as e:
+        print(f"Erro na API Ergast: {e}")
+        return {}
