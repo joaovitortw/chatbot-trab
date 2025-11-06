@@ -1,4 +1,0 @@
-# Adicione estas dependências ao seu requirements.txt (ou instale via pip)
-SQLAlchemy==2.0.35
-passlib==1.7.4
-psycopg[binary]==3.2.1

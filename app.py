@@ -1,10 +1,10 @@
 import streamlit as st
-from backend import chatbot, login_execute, criar_usuario
+from backend import chatbot, login_execute, criar_usuario, fetch_logs
 
 st.set_page_config(page_title="Chatbot F1", page_icon="🏎️")
 st.title("🏁 Chatbot de Automobilismo com IA")
 
-# Login lateral
+# Sidebar de login
 with st.sidebar:
     st.subheader("🔐 Acesso")
     usuario = st.text_input("Usuário")
@@ -19,18 +19,40 @@ with st.sidebar:
                 st.success("Login bem-sucedido!")
             else:
                 st.error("Usuário ou senha incorretos")
-
     with col2:
         if st.button("Criar Conta"):
             criar_usuario(usuario, senha)
             st.success("Usuário criado com sucesso.")
 
-# Verifica login antes de mostrar chatbot
+# Interface com abas após login
 if st.session_state.get("logado"):
-    st.subheader(f"Bem-vindo, {st.session_state['usuario']}!")
-    pergunta = st.text_input("Faça uma pergunta sobre F1 ou carros:")
+    tabs = st.tabs(["🤖 Chatbot", "📜 Histórico", "ℹ️ Sobre"])
+    
+    with tabs[0]:
+        st.subheader("Chat com IA sobre corridas")
+        pergunta = st.text_input("Faça sua pergunta:")
 
-    if pergunta:
-        with st.spinner("Consultando IA..."):
-            resposta = chatbot(pergunta)
-            st.write(resposta)
+        if pergunta:
+            with st.spinner("Consultando IA..."):
+                resposta = chatbot(pergunta)
+                st.write(resposta)
+
+    with tabs[1]:
+        st.subheader("📚 Histórico de Perguntas")
+        logs = fetch_logs(limit=10)
+        for log in logs:
+            st.markdown(f"**{log['ts'].strftime('%d/%m/%Y %H:%M')}**")
+            st.markdown(f"**Pergunta:** {log['pergunta']}")
+            st.markdown(f"**Resposta:** {log['resposta']}")
+            st.markdown("---")
+
+    with tabs[2]:
+        st.subheader("📦 Sobre o Projeto")
+        st.markdown("""
+        Este chatbot foi desenvolvido para automatizar consultas sobre automobilismo (F1 e afins) com:
+        - **Gemini AI** para respostas inteligentes
+        - **Ergast API** para dados reais de corridas
+        - **PostgreSQL** para histórico e login
+        - **SerpAPI** para imagens de carros e pilotos
+        """)
+
