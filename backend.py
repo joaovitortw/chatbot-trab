@@ -29,7 +29,7 @@ conn = psycopg2.connect(
     port=os.getenv("PGPORT", "5432"),
     dbname=os.getenv("PGDATABASE", "chatbotdb"),
     user=os.getenv("PGUSER", "postgres"),
-    password=os.getenv("PGPASSWORD", "J0a0witek@"),
+    password=os.getenv("PGPASSWORD", "postgres123"),
     connect_timeout=10
 )
 cursor = conn.cursor(cursor_factory=RealDictCursor)
