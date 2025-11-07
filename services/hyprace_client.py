@@ -25,7 +25,11 @@ def get_next_race():
             if not start_str:
                 continue
 
-            start_dt = datetime.fromisoformat(start_str.replace("Z", "+00:00"))
+            try:
+                start_dt = datetime.fromisoformat(start_str.replace("Z", "+00:00"))
+            except ValueError:
+                continue
+
             if start_dt > now:
                 future_races.append((start_dt, gp))
 
@@ -43,10 +47,12 @@ def get_next_race():
                 "name": name,
                 "circuit": circuit,
                 "country": country,
-                "start": start_dt.strftime("%d/%m/%Y"),
+                "start": start_dt.strftime("%Y-%m-%d"),
                 "countdown": dias
             }
 
+        return None
+
     except Exception as e:
-        print(f"Erro ao buscar próxima corrida: {e}")
+        print(f"❌ Erro ao buscar próxima corrida: {e}")
         return None

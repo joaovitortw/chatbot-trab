@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 import psycopg2
 from psycopg2.extras import RealDictCursor
 
-# ✅ NOVO: pega a próxima corrida diretamente da Hyprace API
+# ✅ Corrigido: Função correta da Hyprace
 from services.hyprace_client import get_next_race
 
 # ✅ IA + SerpAPI
@@ -30,16 +30,10 @@ def chatbot(query: str) -> str:
         if corrida:
             nome = corrida.get("name", "Nome indisponível")
             circuito = corrida.get("circuit", "Local desconhecido")
-            data_str = corrida.get("start", "")  # formato dd/mm/YYYY
+            data_str = corrida.get("start", "Data desconhecida")
+            dias = corrida.get("countdown", "")
 
-            # ⏱️ Dias restantes
-            try:
-                corrida_dt = datetime.strptime(data_str, "%d/%m/%Y").replace(tzinfo=timezone.utc)
-                dias_restantes = (corrida_dt - datetime.now(timezone.utc)).days
-                countdown_info = f"\n\n📅 Faltam **{dias_restantes} dias** para o evento!"
-            except Exception as e:
-                print(f"Erro na contagem regressiva: {e}")
-                countdown_info = ""
+            countdown_info = f"\n\n📅 Faltam **{dias} dias** para o evento!" if dias else ""
 
             resposta = (
                 f"A próxima corrida de Fórmula 1 é o **{nome}**, "
@@ -47,7 +41,7 @@ def chatbot(query: str) -> str:
                 f"{countdown_info}"
             )
         else:
-            resposta = "Desculpe, não consegui obter a próxima corrida de F1."
+            resposta = "Desculpe, não há corridas futuras cadastradas na API."
     else:
         try:
             dados = search_car_info(query)
