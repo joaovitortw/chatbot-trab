@@ -1,4 +1,4 @@
-# backend.py (back-end)
+# backend.py (back-end atualizado com OpenF1 API)
 
 import os
 import requests
@@ -7,19 +7,21 @@ import psycopg2
 from psycopg2.extras import RealDictCursor
 from datetime import datetime
 
-# Configuração das APIs usando variáveis de ambiente com fallback
-gemini_api_key = os.getenv(
-    "GEMINI_API_KEY",
-    "AIzaSyD8NuvzLTRcmdSSsNsgZ8G7OqDhKtM9POs"
+# Importa a nova API da OpenF1
+from services.f1_api_client import (
+    get_next_event_f1,
+    get_f1_calendar,
+    get_f1_results_by_round,
+    get_f1_standings
 )
+
+# Configuração das APIs usando variáveis de ambiente com fallback
+gemini_api_key = os.getenv("GEMINI_API_KEY", "AIzaSyD8NuvzLTRcmdSSsNsgZ8G7OqDhKtM9POs")
 if not gemini_api_key:
     raise RuntimeError("GEMINI_API_KEY não definido e não há chave fallback.")
 genai.configure(api_key=gemini_api_key)
 
-SERP_API_KEY = os.getenv(
-    "SERP_API_KEY",
-    "2a5d0a505457f4743be1f1e7994b5384ff5def525b5e0191a99bac4e1dd26cd5"
-)
+SERP_API_KEY = os.getenv("SERP_API_KEY", "2a5d0a505457f4743be1f1e7994b5384ff5def525b5e0191a99bac4e1dd26cd5")
 if not SERP_API_KEY:
     raise RuntimeError("SERP_API_KEY não definido e não há chave fallback.")
 
@@ -66,7 +68,8 @@ def fetch_logs(limit: int = 20):
     """, (limit,))
     return cur.fetchall()
 
-# Pesquisa na SerpAPI com imagens (tbm=isch)
+
+# === 🔎 Pesquisa de imagem com SerpAPI ===
 def search_car_info(query: str) -> dict:
     url = f'https://serpapi.com/search.json?q={query}+car&tbm=isch&api_key={SERP_API_KEY}'
     try:
@@ -77,7 +80,8 @@ def search_car_info(query: str) -> dict:
         print(f"Erro ao consultar SerpAPI: {e}")
         return {}
 
-# Geração de resposta com imagem incluída
+
+# === 🤖 Geração de resposta com Gemini AI ===
 def generate_response(query: str, search_results: dict) -> str:
     image_url = ""
     images = search_results.get("images_results", [])
@@ -85,8 +89,8 @@ def generate_response(query: str, search_results: dict) -> str:
         image_url = images[0].get("original") or images[0].get("thumbnail")
 
     prompt = f"""
-O usuário perguntou sobre carros: {query}
-Gere uma resposta clara e objetiva sobre esse tema, com base no conhecimento atual do modelo.
+O usuário perguntou sobre: {query}
+Responda de forma clara e objetiva, baseada no conhecimento atual do modelo.
 """
 
     try:
@@ -102,42 +106,57 @@ Gere uma resposta clara e objetiva sobre esse tema, com base no conhecimento atu
         print(f"Erro na geração de conteúdo: {e}")
         return "Desculpe, ocorreu um erro ao gerar a resposta."
 
-# Função principal do chatbot
-def chatbot(query: str) -> str:
-    dados = search_car_info(query)
-    resposta = generate_response(query, dados) if dados else "Desculpe, não encontrei informações relevantes."
 
+# === 💬 Função principal do chatbot ===
+def chatbot(query: str) -> str:
+    """Processa a entrada do usuário e decide se usa a IA ou a API de F1."""
     try:
+        # Caso a pergunta seja sobre a próxima corrida da F1
+        if "próxima corrida" in query.lower() and "f1" in query.lower():
+            corrida = get_next_event_f1()
+            if corrida:
+                nome = corrida.get("meeting_name", "Nome indisponível")
+                data = corrida.get("date_utc", "Data não disponível")[:10]
+                circuito = corrida.get("location", "Circuito desconhecido")
+
+                resposta = (
+                    f"A próxima corrida de Fórmula 1 é o 🏁 **{nome}**, "
+                    f"que ocorrerá em **{data}** no circuito **{circuito}**."
+                )
+            else:
+                resposta = "Desculpe, não consegui obter os dados atualizados da Fórmula 1."
+        else:
+            # Caso não seja F1 → usa SerpAPI + Gemini
+            dados = search_car_info(query)
+            resposta = generate_response(query, dados) if dados else "Desculpe, não encontrei informações relevantes."
+
+        # Salva o log no banco de dados
         cursor.execute(
             "INSERT INTO logs (pergunta, resposta, ts) VALUES (%s, %s, %s)",
             (query, resposta, datetime.utcnow())
         )
         conn.commit()
+        return resposta
+
     except Exception as e:
-        print(f"Erro ao gravar log: {e}")
+        print(f"Erro no chatbot: {e}")
+        return "Desculpe, ocorreu um erro ao processar sua solicitação."
 
-    return resposta
 
-# Função para login via banco (sem hash)
+# === 🔐 Login simples ===
 def login_execute(username: str, password: str) -> bool:
-    """
-    Valida usuário e senha no banco. A senha é comparada em texto puro.
-    """
     try:
-        cursor.execute(
-            "SELECT password FROM users WHERE username = %s",
-            (username.strip(),)
-        )
+        cursor.execute("SELECT password FROM users WHERE username = %s", (username.strip(),))
         row = cursor.fetchone()
-        if row is None:
+        if not row:
             return False
-        stored_password = row["password"]
-        return stored_password == password.strip()  # Comparação direta sem hash
+        return row["password"] == password.strip()
     except Exception as e:
         print(f"Erro no login: {e}")
         return False
 
-# Função para criar novo usuário (sem hash de senha)
+
+# === 👤 Criar novo usuário ===
 def criar_usuario(username: str, password: str):
     try:
         cursor.execute(
@@ -148,22 +167,3 @@ def criar_usuario(username: str, password: str):
         print("Usuário criado com sucesso.")
     except Exception as e:
         print(f"Erro ao criar usuário: {e}")
-
-# Consulta a próxima corrida real via Ergast API
-def get_next_event_f1() -> dict:
-    try:
-        url = "https://ergast.com/api/f1/current/next.json"
-        response = requests.get(url, timeout=10)
-        response.raise_for_status()
-        data = response.json()
-        race = data["MRData"]["RaceTable"]["Races"][0]
-        return {
-            "nome": race["raceName"],
-            "data": race["date"],
-            "hora": race.get("time", "Horário não informado"),
-            "circuito": race["Circuit"]["circuitName"],
-            "pais": race["Circuit"]["Location"]["country"]
-        }
-    except Exception as e:
-        print(f"Erro na API Ergast: {e}")
-        return {}
