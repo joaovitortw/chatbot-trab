@@ -27,7 +27,7 @@ psycopg[binary]==3.2.1  # Incluído conforme solicitado (mas escolha um dos dois
 passlib==1.7.4
 
 # Gemini AI
-google-generativeai
+google-generativeai==0.3.2
 
 # Testes e cobertura
 pytest==8.2.1

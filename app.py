@@ -1,5 +1,6 @@
 import streamlit as st
-from backend import chatbot, login_execute, criar_usuario, fetch_logs
+from services.backend import chatbot  # <--- AGORA CORRETO
+from backend import login_execute, criar_usuario, fetch_logs
 
 st.set_page_config(page_title="Chatbot F1", page_icon="🏎️")
 st.title("🏁 Chatbot de Automobilismo com IA")
@@ -51,8 +52,7 @@ if st.session_state.get("logado"):
         st.markdown("""
         Este chatbot foi desenvolvido para automatizar consultas sobre automobilismo (F1 e afins) com:
         - **Gemini AI** para respostas inteligentes
-        - **Ergast API** para dados reais de corridas
+        - **OpenF1 API** para dados reais de corridas
         - **PostgreSQL** para histórico e login
         - **SerpAPI** para imagens de carros e pilotos
         """)
-
