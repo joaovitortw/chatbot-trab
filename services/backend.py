@@ -4,14 +4,11 @@ from datetime import datetime, timezone
 import psycopg2
 from psycopg2.extras import RealDictCursor
 
-# API OpenF1 para eventos futuros
-from services.f1_api_client import get_next_event_f1
+# ✅ NOVO: pega a próxima corrida diretamente da Hyprace API
+from services.hyprace_client import get_next_race
 
-# IA + SerpAPI
-from services.utils import (
-    search_car_info,
-    generate_response
-)
+# ✅ IA + SerpAPI
+from services.utils import search_car_info, generate_response
 
 # 🔌 Conexão com PostgreSQL
 conn = psycopg2.connect(
@@ -24,26 +21,24 @@ conn = psycopg2.connect(
 )
 cursor = conn.cursor(cursor_factory=RealDictCursor)
 
-# 🤖 Função principal do chatbot
+
 def chatbot(query: str) -> str:
     query_lower = query.lower()
 
     if "próxima corrida" in query_lower and "f1" in query_lower:
-        corrida = get_next_event_f1()
+        corrida = get_next_race()
         if corrida:
-            nome = corrida.get("meeting_name", "Nome indisponível")
-            data_str = corrida.get("date_utc", "Data não disponível")[:10]
-            circuito = corrida.get("location", "Local desconhecido")
+            nome = corrida.get("name", "Nome indisponível")
+            circuito = corrida.get("circuit", "Local desconhecido")
+            data_str = corrida.get("start", "")  # formato dd/mm/YYYY
 
-            # 🕒 Contagem regressiva (dias)
+            # ⏱️ Dias restantes
             try:
-                corrida_dt = datetime.fromisoformat(
-                    corrida.get("date_utc", "").replace("Z", "+00:00")
-                )
+                corrida_dt = datetime.strptime(data_str, "%d/%m/%Y").replace(tzinfo=timezone.utc)
                 dias_restantes = (corrida_dt - datetime.now(timezone.utc)).days
                 countdown_info = f"\n\n📅 Faltam **{dias_restantes} dias** para o evento!"
             except Exception as e:
-                print(f"Erro ao calcular contagem regressiva: {e}")
+                print(f"Erro na contagem regressiva: {e}")
                 countdown_info = ""
 
             resposta = (
@@ -52,10 +47,8 @@ def chatbot(query: str) -> str:
                 f"{countdown_info}"
             )
         else:
-            resposta = "Desculpe, não consegui obter dados atualizados da próxima corrida de F1."
-
+            resposta = "Desculpe, não consegui obter a próxima corrida de F1."
     else:
-        # IA + imagens (sem dados da OpenF1)
         try:
             dados = search_car_info(query)
             resposta = generate_response(query, dados) if dados else "Desculpe, não encontrei informações relevantes."
@@ -63,7 +56,6 @@ def chatbot(query: str) -> str:
             print(f"Erro ao usar IA/SerpAPI: {e}")
             resposta = "Desculpe, ocorreu um erro ao buscar a resposta com IA."
 
-    # 🗃️ Log no banco de dados
     try:
         cursor.execute(
             "INSERT INTO logs (pergunta, resposta, ts) VALUES (%s, %s, %s)",
